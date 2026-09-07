@@ -10,33 +10,74 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FabricaRouteImport } from './routes/fabrica'
+import { Route as RoteirosRouteImport } from './routes/roteiros'
+import { Route as StoryboardsRouteImport } from './routes/storyboards'
+import { Route as ThumbnailsRouteImport } from './routes/thumbnails'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FabricaRoute = FabricaRouteImport.update({
+  id: '/fabrica',
+  path: '/fabrica',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoteirosRoute = RoteirosRouteImport.update({
+  id: '/roteiros',
+  path: '/roteiros',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoryboardsRoute = StoryboardsRouteImport.update({
+  id: '/storyboards',
+  path: '/storyboards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThumbnailsRoute = ThumbnailsRouteImport.update({
+  id: '/thumbnails',
+  path: '/thumbnails',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/fabrica': typeof FabricaRoute
+  '/roteiros': typeof RoteirosRoute
+  '/storyboards': typeof StoryboardsRoute
+  '/thumbnails': typeof ThumbnailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/fabrica': typeof FabricaRoute
+  '/roteiros': typeof RoteirosRoute
+  '/storyboards': typeof StoryboardsRoute
+  '/thumbnails': typeof ThumbnailsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/fabrica': typeof FabricaRoute
+  '/roteiros': typeof RoteirosRoute
+  '/storyboards': typeof StoryboardsRoute
+  '/thumbnails': typeof ThumbnailsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/fabrica' | '/roteiros' | '/storyboards' | '/thumbnails'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/fabrica' | '/roteiros' | '/storyboards' | '/thumbnails'
+  id:
+    '__root__' | '/' | '/fabrica' | '/roteiros' | '/storyboards' | '/thumbnails'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FabricaRoute: typeof FabricaRoute
+  RoteirosRoute: typeof RoteirosRoute
+  StoryboardsRoute: typeof StoryboardsRoute
+  ThumbnailsRoute: typeof ThumbnailsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +89,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fabrica': {
+      id: '/fabrica'
+      path: '/fabrica'
+      fullPath: '/fabrica'
+      preLoaderRoute: typeof FabricaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roteiros': {
+      id: '/roteiros'
+      path: '/roteiros'
+      fullPath: '/roteiros'
+      preLoaderRoute: typeof RoteirosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/storyboards': {
+      id: '/storyboards'
+      path: '/storyboards'
+      fullPath: '/storyboards'
+      preLoaderRoute: typeof StoryboardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/thumbnails': {
+      id: '/thumbnails'
+      path: '/thumbnails'
+      fullPath: '/thumbnails'
+      preLoaderRoute: typeof ThumbnailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FabricaRoute: FabricaRoute,
+  RoteirosRoute: RoteirosRoute,
+  StoryboardsRoute: StoryboardsRoute,
+  ThumbnailsRoute: ThumbnailsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
