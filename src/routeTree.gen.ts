@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentesRouteImport } from './routes/agentes'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as FabricaRouteImport } from './routes/fabrica'
 import { Route as IdeiasRouteImport } from './routes/ideias'
 import { Route as MemoriaRouteImport } from './routes/memoria'
@@ -34,6 +35,11 @@ const AgentesRoute = AgentesRouteImport.update({
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FabricaRoute = FabricaRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
   '/analytics': typeof AnalyticsRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
   '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
   '/analytics': typeof AnalyticsRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
   '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
   '/analytics': typeof AnalyticsRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
   '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agentes'
     | '/analytics'
+    | '/configuracoes'
     | '/fabrica'
     | '/ideias'
     | '/memoria'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agentes'
     | '/analytics'
+    | '/configuracoes'
     | '/fabrica'
     | '/ideias'
     | '/memoria'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agentes'
     | '/analytics'
+    | '/configuracoes'
     | '/fabrica'
     | '/ideias'
     | '/memoria'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentesRoute: typeof AgentesRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   FabricaRoute: typeof FabricaRoute
   IdeiasRoute: typeof IdeiasRoute
   MemoriaRoute: typeof MemoriaRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fabrica': {
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentesRoute: AgentesRoute,
   AnalyticsRoute: AnalyticsRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   FabricaRoute: FabricaRoute,
   IdeiasRoute: IdeiasRoute,
   MemoriaRoute: MemoriaRoute,
