@@ -1,29 +1,243 @@
-export type StepStatus = "idle" | "processing" | "completed" | "error";
-
-export type StepId =
+export type StageId =
   | "strategy"
+  | "titles"
   | "script"
-  | "storyboard"
-  | "visual"
+  | "bible"
+  | "scenes"
+  | "prompts"
+  | "narration"
+  | "visuals"
   | "thumbnail"
   | "seo"
   | "quality";
 
-export interface PipelineStep {
-  id: StepId;
-  name: string;
-  icon: string;
-  status: StepStatus;
-  progress: number;
+export type StageStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export interface StageState {
+  status: StageStatus;
+  error?: string | null;
+  attempt?: number;
+  updatedAt?: string;
 }
 
-export interface ChannelConfig {
-  name: string;
+export type Stages = Partial<Record<StageId, StageState>>;
+
+export const STAGES: { id: StageId; name: string; icon: string }[] = [
+  { id: "strategy", name: "Estratégia", icon: "target" },
+  { id: "titles", name: "Títulos", icon: "type" },
+  { id: "script", name: "Roteiro", icon: "file-text" },
+  { id: "bible", name: "Bíblia Visual", icon: "book" },
+  { id: "scenes", name: "Cenas", icon: "clapperboard" },
+  { id: "prompts", name: "Prompts", icon: "wand" },
+  { id: "narration", name: "Narração", icon: "mic" },
+  { id: "visuals", name: "Visuais", icon: "image" },
+  { id: "thumbnail", name: "Thumbnail", icon: "layout" },
+  { id: "seo", name: "SEO", icon: "search" },
+  { id: "quality", name: "Controle de Qualidade", icon: "shield-check" },
+];
+
+export type ProjectStatus =
+  | "IDEIA"
+  | "PLANEJAMENTO"
+  | "ROTEIRO"
+  | "CENAS"
+  | "VISUAIS"
+  | "NARRACAO"
+  | "MONTAGEM"
+  | "QA"
+  | "PRONTO";
+
+export interface ProjectConfig {
+  channel: string;
   niche: string;
   language: string;
-  format: string;
-  duration: string;
+  durationMinutes: number;
+  sceneSeconds: number;
+  aspectRatio: string;
   style: string;
+  format: string;
+  audience: string;
+  voice: string;
+}
+
+export interface Strategy {
+  angle: string;
+  goal: string;
+  audience: string;
+  hook: string;
+  pillars: string[];
+  potential: number;
+}
+
+export interface TitleIdea {
+  title: string;
+  hook: string;
+  promise: string;
+  curiosity: number;
+  clarity: number;
+  potential: number;
+}
+
+export interface TitlePack {
+  titles: TitleIdea[];
+  best: string;
+}
+
+export interface ScriptBlock {
+  label: string;
+  content: string;
+}
+
+export interface ScriptPack {
+  blocks: ScriptBlock[];
+  words: number;
+  estimatedMinutes: number;
+}
+
+export interface BibleCharacter {
+  name: string;
+  age: string;
+  appearance: string;
+  face: string;
+  hair: string;
+  beard: string;
+  clothing: string;
+  accessories: string;
+  traits: string;
+}
+
+export interface BibleLocation {
+  name: string;
+  architecture: string;
+  era: string;
+  weather: string;
+  lighting: string;
+  materials: string;
+  atmosphere: string;
+}
+
+export interface BibleObject {
+  name: string;
+  appearance: string;
+  size: string;
+  material: string;
+  traits: string;
+}
+
+export interface VisualBible {
+  characters: BibleCharacter[];
+  locations: BibleLocation[];
+  objects: BibleObject[];
+  paletteAndStyle: string;
+}
+
+export interface SceneRow {
+  id: string;
+  project_id: string;
+  user_id: string;
+  idx: number;
+  start_s: number;
+  end_s: number;
+  duration_s: number;
+  narration: string;
+  action: string;
+  characters: string[];
+  location: string;
+  camera: string;
+  movement: string;
+  lighting: string;
+  atmosphere: string;
+  effects: string;
+  prompt: string;
+  negative_prompt: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeoPack {
+  title: string;
+  titleVariations: string[];
+  description: string;
+  chapters: string[];
+  tags: string[];
+  hashtags: string[];
+  pinnedComment: string;
+}
+
+export interface ThumbnailConcept {
+  id: string;
+  label: string;
+  concept: string;
+  composition: string;
+  character: string;
+  emotion: string;
+  mainElement: string;
+  text: string;
+  prompt: string;
+  ctr: number;
+}
+
+export interface QualityIssue {
+  severity: "alta" | "media" | "baixa";
+  area: string;
+  message: string;
+  fix: string;
+}
+
+export interface QualityReport {
+  scores: { label: string; value: number }[];
+  overall: number;
+  approved: boolean;
+  issues: QualityIssue[];
+}
+
+export interface ProjectData {
+  strategy?: Strategy;
+  titles?: TitlePack;
+  script?: ScriptPack;
+  bible?: VisualBible;
+  seo?: SeoPack;
+  thumbnails?: ThumbnailConcept[];
+  quality?: QualityReport;
+}
+
+export interface ProjectRow {
+  id: string;
+  user_id: string;
+  title: string;
+  theme: string;
+  config: ProjectConfig;
+  data: ProjectData;
+  stages: Stages;
+  status: ProjectStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AssetType = "image" | "audio" | "thumbnail";
+
+export interface AssetRow {
+  id: string;
+  project_id: string;
+  scene_id: string | null;
+  user_id: string;
+  type: AssetType;
+  url: string;
+  status: string;
+  meta: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AgentRunRow {
+  id: string;
+  project_id: string;
+  user_id: string;
+  agent: string;
+  status: StageStatus;
+  attempt: number;
+  duration_ms: number;
+  error: string | null;
+  created_at: string;
 }
 
 export interface ChannelDNA {
@@ -37,109 +251,4 @@ export interface ChannelDNA {
   voice: string;
   audience: string;
   rules: string;
-}
-
-export interface Strategy {
-  theme: string;
-  angle: string;
-  goal: string;
-  audience: string;
-  potential: number;
-}
-
-export interface ScriptBlock {
-  id: string;
-  label: string;
-  content: string;
-}
-
-export interface Scene {
-  id: string;
-  index: number;
-  duration: number;
-  location: string;
-  character: string;
-  action: string;
-  camera: string;
-  emotion: string;
-}
-
-export interface VisualPrompt {
-  sceneId: string;
-  prompt: string;
-  negative: string;
-  style: string;
-  camera: string;
-  lighting: string;
-  aspectRatio: string;
-}
-
-export interface ThumbnailConcept {
-  id: string;
-  label: string;
-  title: string;
-  description: string;
-  composition: string;
-  text: string;
-  emotion: string;
-  prompt: string;
-  ctr: number;
-}
-
-export interface SeoTitle {
-  title: string;
-  ctr: number;
-  curiosity: number;
-  clarity: number;
-  potential: number;
-}
-
-export interface SeoPack {
-  titles: SeoTitle[];
-  description: string;
-  keywords: string[];
-  hashtags: string[];
-  chapters: string[];
-  tags: string[];
-}
-
-export interface QualityReport {
-  script: number;
-  narrative: number;
-  hook: number;
-  continuity: number;
-  seo: number;
-  thumbnail: number;
-  overall: number;
-  approved: boolean;
-}
-
-export interface Project {
-  id: string;
-  title: string;
-  idea: string;
-  channel: ChannelConfig;
-  createdAt: string;
-  status: "draft" | "producing" | "done";
-  currentStep: StepId | null;
-  score: number;
-  strategy?: Strategy;
-  script?: ScriptBlock[];
-  scenes?: Scene[];
-  prompts?: VisualPrompt[];
-  thumbnails?: ThumbnailConcept[];
-  seo?: SeoPack;
-  quality?: QualityReport;
-}
-
-export interface AgentInput {
-  channel: ChannelConfig;
-  idea: string;
-  project?: Project;
-}
-
-export interface AgentOutput<T> {
-  ok: boolean;
-  mode: "demo" | "api";
-  data: T;
 }
