@@ -14,7 +14,217 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agent_runs: {
+        Row: {
+          agent: string
+          attempt: number
+          created_at: string
+          duration_ms: number
+          error: string | null
+          id: string
+          project_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          agent: string
+          attempt?: number
+          created_at?: string
+          duration_ms?: number
+          error?: string | null
+          id?: string
+          project_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          agent?: string
+          attempt?: number
+          created_at?: string
+          duration_ms?: number
+          error?: string | null
+          id?: string
+          project_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          created_at: string
+          id: string
+          meta: Json
+          project_id: string
+          scene_id: string | null
+          status: string
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          project_id: string
+          scene_id?: string | null
+          status?: string
+          type: string
+          url?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          project_id?: string
+          scene_id?: string | null
+          status?: string
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assets_scene_id_fkey"
+            columns: ["scene_id"]
+            isOneToOne: false
+            referencedRelation: "scenes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          config: Json
+          created_at: string
+          data: Json
+          id: string
+          stages: Json
+          status: string
+          theme: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          data?: Json
+          id?: string
+          stages?: Json
+          status?: string
+          theme?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          data?: Json
+          id?: string
+          stages?: Json
+          status?: string
+          theme?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scenes: {
+        Row: {
+          action: string
+          atmosphere: string
+          camera: string
+          characters: string[]
+          created_at: string
+          duration_s: number
+          effects: string
+          end_s: number
+          id: string
+          idx: number
+          lighting: string
+          location: string
+          movement: string
+          narration: string
+          negative_prompt: string
+          project_id: string
+          prompt: string
+          start_s: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          atmosphere?: string
+          camera?: string
+          characters?: string[]
+          created_at?: string
+          duration_s?: number
+          effects?: string
+          end_s?: number
+          id?: string
+          idx?: number
+          lighting?: string
+          location?: string
+          movement?: string
+          narration?: string
+          negative_prompt?: string
+          project_id: string
+          prompt?: string
+          start_s?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          atmosphere?: string
+          camera?: string
+          characters?: string[]
+          created_at?: string
+          duration_s?: number
+          effects?: string
+          end_s?: number
+          id?: string
+          idx?: number
+          lighting?: string
+          location?: string
+          movement?: string
+          narration?: string
+          negative_prompt?: string
+          project_id?: string
+          prompt?: string
+          start_s?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
