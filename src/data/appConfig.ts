@@ -1,4 +1,4 @@
-import type { ChannelDNA, ProjectConfig } from "@/types";
+import type { ChannelDNA, ChannelConfig, PipelineStep, ProjectConfig } from "@/types";
 
 export const appConfig = {
   app: {
@@ -45,3 +45,38 @@ export const defaultDNA: ChannelDNA = {
 };
 
 export const VOICES = ["onyx", "alloy", "echo", "fable", "nova", "shimmer"] as const;
+
+// Compatibilidade temporária com as telas V1 enquanto a interface V2 é integrada.
+export const emptyChannel: ChannelConfig = {
+  name: "",
+  niche: "",
+  duration: "10-15 minutos",
+  language: "Português Brasileiro",
+  style: "Cinematográfico",
+  format: "long-form",
+};
+
+export const demoChannel: ChannelConfig = {
+  name: "Filmes Bíblicos Épicos",
+  niche: "Filmes bíblicos cinematográficos",
+  duration: "10-15 minutos",
+  language: "Português Brasileiro",
+  style: "Épico",
+  format: "long-form",
+};
+
+export const demoIdea = "O último dia antes do Dilúvio";
+
+export const basePipeline: PipelineStep[] = [
+  { id: "strategy", label: "Estratégia", status: "pending" },
+  { id: "titles", label: "Títulos", status: "pending" },
+  { id: "script", label: "Roteiro", status: "pending" },
+  { id: "bible", label: "Bíblia Visual", status: "pending" },
+  { id: "scenes", label: "Cenas", status: "pending" },
+  { id: "prompts", label: "Prompts", status: "pending" },
+  { id: "narration", label: "Narração", status: "pending" },
+  { id: "visuals", label: "Visuais", status: "pending" },
+  { id: "thumbnail", label: "Thumbnail", status: "pending" },
+  { id: "seo", label: "SEO", status: "pending" },
+  { id: "quality", label: "Qualidade", status: "pending" },
+];
