@@ -25,6 +25,7 @@ const NAV = [
   { to: "/ideias", label: "Ideias", icon: Lightbulb },
   { to: "/roteiros", label: "Roteiros", icon: PenLine },
   { to: "/storyboards", label: "Storyboards", icon: Clapperboard },
+  { to: "/video", label: "Gerador de vídeo", icon: Clapperboard },
   { to: "/thumbnails", label: "Thumbnails", icon: ImageIcon },
   { to: "/producoes", label: "Produções", icon: FolderClock },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },

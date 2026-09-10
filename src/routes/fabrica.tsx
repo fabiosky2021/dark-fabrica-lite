@@ -80,6 +80,11 @@ function FabricaPage() {
           foi validada.
         </p>
       </div>
+      <div className="mb-5 rounded-md border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
+        <strong>Renderização final:</strong> o pipeline gera e persiste roteiro, cenas, prompts,
+        narração, visuais, thumbnail, SEO e QC. A montagem do MP4 será liberada quando um
+        renderizador de vídeo estiver conectado; nenhum resultado será simulado.
+      </div>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Panel title="Configuração da produção">
           <div className="grid gap-4 sm:grid-cols-2">

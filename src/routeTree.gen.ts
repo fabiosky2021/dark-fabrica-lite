@@ -19,6 +19,7 @@ import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RoteirosRouteImport } from './routes/roteiros'
 import { Route as StoryboardsRouteImport } from './routes/storyboards'
 import { Route as ThumbnailsRouteImport } from './routes/thumbnails'
+import { Route as VideoRouteImport } from './routes/video'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const ThumbnailsRoute = ThumbnailsRouteImport.update({
   path: '/thumbnails',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VideoRoute = VideoRouteImport.update({
+  id: '/video',
+  path: '/video',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   RoteirosRoute: typeof RoteirosRoute
   StoryboardsRoute: typeof StoryboardsRoute
   ThumbnailsRoute: typeof ThumbnailsRoute
+  VideoRoute: typeof VideoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ThumbnailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/video': {
+      id: '/video'
+      path: '/video'
+      fullPath: '/video'
+      preLoaderRoute: typeof VideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoteirosRoute: RoteirosRoute,
   StoryboardsRoute: StoryboardsRoute,
   ThumbnailsRoute: ThumbnailsRoute,
+  VideoRoute: VideoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
