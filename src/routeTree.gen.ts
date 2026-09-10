@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentesRouteImport } from './routes/agentes'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as FabricaRouteImport } from './routes/fabrica'
+import { Route as IdeiasRouteImport } from './routes/ideias'
 import { Route as MemoriaRouteImport } from './routes/memoria'
 import { Route as ProducoesRouteImport } from './routes/producoes'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
@@ -31,6 +33,11 @@ const AgentesRoute = AgentesRouteImport.update({
   path: '/agentes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
@@ -39,6 +46,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
 const FabricaRoute = FabricaRouteImport.update({
   id: '/fabrica',
   path: '/fabrica',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdeiasRoute = IdeiasRouteImport.update({
+  id: '/ideias',
+  path: '/ideias',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MemoriaRoute = MemoriaRouteImport.update({
@@ -80,8 +92,10 @@ const VideoRoute = VideoRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
@@ -93,8 +107,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
@@ -107,8 +123,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
@@ -122,8 +140,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
@@ -135,8 +155,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
@@ -148,8 +170,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
@@ -162,8 +186,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentesRoute: typeof AgentesRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FabricaRoute: typeof FabricaRoute
+  IdeiasRoute: typeof IdeiasRoute
   MemoriaRoute: typeof MemoriaRoute
   ProducoesRoute: typeof ProducoesRoute
   RoadmapRoute: typeof RoadmapRoute
@@ -189,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configuracoes': {
       id: '/configuracoes'
       path: '/configuracoes'
@@ -201,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/fabrica'
       fullPath: '/fabrica'
       preLoaderRoute: typeof FabricaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ideias': {
+      id: '/ideias'
+      path: '/ideias'
+      fullPath: '/ideias'
+      preLoaderRoute: typeof IdeiasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/memoria': {
@@ -258,8 +298,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentesRoute: AgentesRoute,
+  AnalyticsRoute: AnalyticsRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   FabricaRoute: FabricaRoute,
+  IdeiasRoute: IdeiasRoute,
   MemoriaRoute: MemoriaRoute,
   ProducoesRoute: ProducoesRoute,
   RoadmapRoute: RoadmapRoute,
