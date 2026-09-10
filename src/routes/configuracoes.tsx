@@ -11,9 +11,15 @@ export const Route = createFileRoute("/configuracoes")({
   head: () => ({
     meta: [
       { title: "Configurações | Fábrica Dark IA" },
-      { name: "description", content: "Preferências da aplicação, dados salvos e exportação de projetos." },
+      {
+        name: "description",
+        content: "Preferências da aplicação, dados salvos e exportação de projetos.",
+      },
       { property: "og:title", content: "Configurações | Fábrica Dark IA" },
-      { property: "og:description", content: "Ajuste animações, salvamento automático e gerencie seus dados." },
+      {
+        property: "og:description",
+        content: "Ajuste animações, salvamento automático e gerencie seus dados.",
+      },
     ],
   }),
   component: ConfiguracoesPage,

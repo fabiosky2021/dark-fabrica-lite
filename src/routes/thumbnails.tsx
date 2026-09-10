@@ -8,9 +8,15 @@ export const Route = createFileRoute("/thumbnails")({
   head: () => ({
     meta: [
       { title: "Thumbnails | Fábrica Dark IA" },
-      { name: "description", content: "Três conceitos de thumbnail com composição, texto e CTR estimado." },
+      {
+        name: "description",
+        content: "Três conceitos de thumbnail com composição, texto e CTR estimado.",
+      },
       { property: "og:title", content: "Thumbnails" },
-      { property: "og:description", content: "Conceitos de capa preparados para geração futura de imagens." },
+      {
+        property: "og:description",
+        content: "Conceitos de capa preparados para geração futura de imagens.",
+      },
     ],
   }),
   component: ThumbsPage,

@@ -70,8 +70,20 @@ function Dashboard() {
                     </p>
                   </div>
                   <span className="ml-auto">
-                    <Badge tone={p.status === "done" ? "success" : p.status === "producing" ? "warning" : "muted"}>
-                      {p.status === "done" ? "Concluído" : p.status === "producing" ? "Produzindo" : "Rascunho"}
+                    <Badge
+                      tone={
+                        p.status === "done"
+                          ? "success"
+                          : p.status === "producing"
+                            ? "warning"
+                            : "muted"
+                      }
+                    >
+                      {p.status === "done"
+                        ? "Concluído"
+                        : p.status === "producing"
+                          ? "Produzindo"
+                          : "Rascunho"}
                     </Badge>
                   </span>
                 </li>

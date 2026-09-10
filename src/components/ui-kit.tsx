@@ -17,7 +17,9 @@ export function Panel({
       {(title || action) && (
         <header className="mb-4 flex items-center justify-between gap-3">
           {title && (
-            <h2 className="text-sm font-semibold tracking-wide text-foreground uppercase">{title}</h2>
+            <h2 className="text-sm font-semibold tracking-wide text-foreground uppercase">
+              {title}
+            </h2>
           )}
           {action}
         </header>
@@ -27,7 +29,15 @@ export function Panel({
   );
 }
 
-export function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+export function Stat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) {
   return (
     <div className="panel p-4">
       <p className="text-xs tracking-wide text-muted-foreground uppercase">{label}</p>
@@ -88,13 +98,7 @@ export function Button({
   );
 }
 
-export function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted-foreground uppercase">

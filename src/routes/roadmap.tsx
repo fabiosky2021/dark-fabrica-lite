@@ -7,9 +7,15 @@ export const Route = createFileRoute("/roadmap")({
   head: () => ({
     meta: [
       { title: "Roadmap | Fábrica Dark IA" },
-      { name: "description", content: "O que já existe e as próximas evoluções da Fábrica Dark IA." },
+      {
+        name: "description",
+        content: "O que já existe e as próximas evoluções da Fábrica Dark IA.",
+      },
       { property: "og:title", content: "Roadmap | Fábrica Dark IA" },
-      { property: "og:description", content: "Da versão lite às APIs reais de IA, imagem, voz e vídeo." },
+      {
+        property: "og:description",
+        content: "Da versão lite às APIs reais de IA, imagem, voz e vídeo.",
+      },
     ],
   }),
   component: RoadmapPage,

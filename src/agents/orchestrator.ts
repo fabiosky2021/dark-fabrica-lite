@@ -2,8 +2,17 @@ import { factory, getState } from "@/hooks/useFactory";
 import type { StepId } from "@/types";
 
 const STEPS: StepId[] = [
-  "strategy", "titles", "script", "bible", "scenes", "prompts",
-  "narration", "visuals", "thumbnail", "seo", "quality",
+  "strategy",
+  "titles",
+  "script",
+  "bible",
+  "scenes",
+  "prompts",
+  "narration",
+  "visuals",
+  "thumbnail",
+  "seo",
+  "quality",
 ];
 
 /** Ponte de compatibilidade durante a migração para a arquitetura V2.
@@ -31,7 +40,8 @@ export async function runPipeline(projectId: string): Promise<void> {
     status: "AGUARDANDO",
     mission: "Configuração pendente",
     step: stepLabel(first),
-    decision: "Nenhum resultado falso foi criado. Conecte o agente de servidor V2 para executar esta etapa.",
+    decision:
+      "Nenhum resultado falso foi criado. Conecte o agente de servidor V2 para executar esta etapa.",
   });
 }
 

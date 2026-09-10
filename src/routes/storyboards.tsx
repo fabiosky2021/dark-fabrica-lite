@@ -77,19 +77,34 @@ function StoryboardsPage() {
                   />
                 </Cell>
                 <Cell label="Local">
-                  <Input value={s.location} onChange={(e) => update(s.id, { location: e.target.value })} />
+                  <Input
+                    value={s.location}
+                    onChange={(e) => update(s.id, { location: e.target.value })}
+                  />
                 </Cell>
                 <Cell label="Personagem">
-                  <Input value={s.character} onChange={(e) => update(s.id, { character: e.target.value })} />
+                  <Input
+                    value={s.character}
+                    onChange={(e) => update(s.id, { character: e.target.value })}
+                  />
                 </Cell>
                 <Cell label="Câmera">
-                  <Input value={s.camera} onChange={(e) => update(s.id, { camera: e.target.value })} />
+                  <Input
+                    value={s.camera}
+                    onChange={(e) => update(s.id, { camera: e.target.value })}
+                  />
                 </Cell>
                 <Cell label="Ação">
-                  <Input value={s.action} onChange={(e) => update(s.id, { action: e.target.value })} />
+                  <Input
+                    value={s.action}
+                    onChange={(e) => update(s.id, { action: e.target.value })}
+                  />
                 </Cell>
                 <Cell label="Emoção">
-                  <Input value={s.emotion} onChange={(e) => update(s.id, { emotion: e.target.value })} />
+                  <Input
+                    value={s.emotion}
+                    onChange={(e) => update(s.id, { emotion: e.target.value })}
+                  />
                 </Cell>
               </div>
               {prompt && (
