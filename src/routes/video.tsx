@@ -66,6 +66,16 @@ function VideoPage() {
               </p>
             </div>
           </div>
+          <div className="mt-4 rounded-md border border-border bg-surface-2 p-4 text-xs leading-relaxed text-muted-foreground">
+            <p className="font-medium text-foreground">Próximo passo recomendado</p>
+            <p className="mt-1">
+              Execute as etapas pendentes na Fábrica. O exportador só será liberado depois de um QC
+              aprovado e de assets reais salvos no storage privado.
+            </p>
+            <Link to="/fabrica" className="mt-3 inline-flex text-primary hover:underline">
+              Abrir pipeline da Fábrica
+            </Link>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button disabled title="Disponível quando um renderizador estiver conectado">
               <Play className="size-4" /> Iniciar renderização

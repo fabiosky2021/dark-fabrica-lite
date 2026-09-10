@@ -476,6 +476,22 @@ export const compileProject = createServerFn({ method: "POST" })
     ]);
     if (project.error) throw new Error(project.error.message);
     const row = project.data as unknown as ProjectRow;
+    const quality = (row.data as ProjectData).quality;
+    if (!quality?.approved) {
+      throw new Error(
+        "Exportação bloqueada: execute o Controle de Qualidade e resolva os apontamentos antes de montar o vídeo.",
+      );
+    }
+
+    const readyAssets = ((assets.data ?? []) as unknown as AssetRow[]).filter(
+      (asset) => asset.status === "ready",
+    );
+    if (readyAssets.length === 0) {
+      throw new Error(
+        "Exportação bloqueada: nenhum asset real está pronto. Execute as etapas de narração e visuais primeiro.",
+      );
+    }
+
     return {
       metadata: {
         id: row.id,
