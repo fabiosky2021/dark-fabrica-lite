@@ -198,7 +198,8 @@ export interface ProjectRow {
   created_at: string;
   updated_at: string;
 }
-export type AssetType = "image" | "audio" | "thumbnail";
+export type AssetType = "image" | "audio" | "thumbnail" | "video";
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 export interface AssetRow {
   id: string;
   project_id: string;
@@ -207,7 +208,7 @@ export interface AssetRow {
   type: AssetType;
   url: string;
   status: string;
-  meta: Record<string, unknown>;
+  meta: Record<string, Json>;
   created_at: string;
 }
 export interface AgentRunRow {
