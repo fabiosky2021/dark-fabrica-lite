@@ -54,7 +54,7 @@ export const diagnoseGateway = createServerFn({ method: "POST" })
     const localEndpoint = /127\.0\.0\.1/i.test(base);
     const configured =
       data.providerId === "9router" ||
-      Boolean(process.env.LOVABLE_API_KEY || process.env.AI_GATEWAY_API_KEY);
+      Boolean(process.env['LOVABLE_API_KEY'] || process.env['AI_GATEWAY_API_KEY']);
     if (!configured) {
       return {
         gateway: "failed",
@@ -76,9 +76,9 @@ export const diagnoseGateway = createServerFn({ method: "POST" })
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       const key =
         data.providerId === "9router"
-          ? process.env.NINE_ROUTER_API_KEY
-          : process.env.LOVABLE_API_KEY || process.env.AI_GATEWAY_API_KEY;
-      if (key) headers.Authorization = `Bearer ${key}`;
+          ? process.env['NINE_ROUTER_API_KEY']
+          : process.env['LOVABLE_API_KEY'] || process.env['AI_GATEWAY_API_KEY'];
+      if (key) headers['Authorization'] = `Bearer ${key}`;
       const models = await fetch(`${base}/models`, { headers, signal: controller.signal });
       if (!models.ok) {
         const body = await models.text().catch(() => "");
