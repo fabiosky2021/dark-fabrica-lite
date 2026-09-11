@@ -9,7 +9,10 @@ export const Route = createFileRoute("/roteiros")({
   head: () => ({
     meta: [
       { title: "Roteiros | Fábrica Dark IA" },
-      { name: "description", content: "Editor de roteiro em blocos com contagem de palavras e duração." },
+      {
+        name: "description",
+        content: "Editor de roteiro em blocos com contagem de palavras e duração.",
+      },
       { property: "og:title", content: "Roteiros" },
       { property: "og:description", content: "Editor de roteiro da Fábrica Dark IA." },
     ],

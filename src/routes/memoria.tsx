@@ -11,7 +11,10 @@ export const Route = createFileRoute("/memoria")({
   head: () => ({
     meta: [
       { title: "Memória — DNA do Canal | Fábrica Dark IA" },
-      { name: "description", content: "Defina o DNA do canal: tom, estilo visual, voz, público e regras." },
+      {
+        name: "description",
+        content: "Defina o DNA do canal: tom, estilo visual, voz, público e regras.",
+      },
       { property: "og:title", content: "Memória — DNA do Canal" },
       { property: "og:description", content: "A memória permanente que orienta todos os agentes." },
     ],

@@ -197,7 +197,11 @@ export const runStage = createServerFn({ method: "POST" })
     const stages = (project.stages ?? {}) as Stages;
     const attempt = (stages[stage]?.attempt ?? 0) + 1;
 
-    const setStage = async (patch: Partial<ProjectData>, status: "COMPLETED" | "FAILED", error?: string) => {
+    const setStage = async (
+      patch: Partial<ProjectData>,
+      status: "COMPLETED" | "FAILED",
+      error?: string,
+    ) => {
       const nextStages: Stages = {
         ...stages,
         [stage]: { status, attempt, error: error ?? null, updatedAt: new Date().toISOString() },
@@ -245,7 +249,10 @@ export const runStage = createServerFn({ method: "POST" })
         case "titles": {
           const titles = await agents.runTitles(project.theme, config, projectData);
           await setStage({ titles }, "COMPLETED");
-          await supabase.from("projects").update({ title: titles.best } as never).eq("id", project.id);
+          await supabase
+            .from("projects")
+            .update({ title: titles.best } as never)
+            .eq("id", project.id);
           return { ok: true, stage, message: `${titles.titles.length} títulos gerados.` };
         }
         case "script": {
@@ -269,9 +276,11 @@ export const runStage = createServerFn({ method: "POST" })
             if (fix.fixedCharacters.length) target.characters = fix.fixedCharacters;
           }
           await supabase.from("scenes").delete().eq("project_id", project.id);
-          const { error } = await supabase.from("scenes").insert(
-            drafts.map((d) => ({ ...d, project_id: project.id, user_id: userId })) as never,
-          );
+          const { error } = await supabase
+            .from("scenes")
+            .insert(
+              drafts.map((d) => ({ ...d, project_id: project.id, user_id: userId })) as never,
+            );
           if (error) throw new Error(error.message);
           await setStage({}, "COMPLETED");
           return {
@@ -326,7 +335,9 @@ export const runStage = createServerFn({ method: "POST" })
             .eq("project_id", project.id)
             .eq("type", "image")
             .eq("status", "ready");
-          const done = new Set((existing ?? []).map((a) => (a as { scene_id: string | null }).scene_id));
+          const done = new Set(
+            (existing ?? []).map((a) => (a as { scene_id: string | null }).scene_id),
+          );
           const pending = withPrompt.filter((s) => !done.has(s.id));
           if (pending.length === 0) {
             await setStage({}, "COMPLETED");
@@ -353,9 +364,13 @@ export const runStage = createServerFn({ method: "POST" })
             } as never);
           }
           const remaining = pending.length - batch.length;
-          await setStage({}, remaining > 0 ? "FAILED" : "COMPLETED", remaining > 0
-            ? `${remaining} cenas ainda sem imagem. Execute novamente para continuar.`
-            : undefined);
+          await setStage(
+            {},
+            remaining > 0 ? "FAILED" : "COMPLETED",
+            remaining > 0
+              ? `${remaining} cenas ainda sem imagem. Execute novamente para continuar.`
+              : undefined,
+          );
           return {
             ok: remaining === 0,
             stage,
@@ -461,6 +476,22 @@ export const compileProject = createServerFn({ method: "POST" })
     ]);
     if (project.error) throw new Error(project.error.message);
     const row = project.data as unknown as ProjectRow;
+    const quality = (row.data as ProjectData).quality;
+    if (!quality?.approved) {
+      throw new Error(
+        "Exportação bloqueada: execute o Controle de Qualidade e resolva os apontamentos antes de montar o vídeo.",
+      );
+    }
+
+    const readyAssets = ((assets.data ?? []) as unknown as AssetRow[]).filter(
+      (asset) => asset.status === "ready",
+    );
+    if (readyAssets.length === 0) {
+      throw new Error(
+        "Exportação bloqueada: nenhum asset real está pronto. Execute as etapas de narração e visuais primeiro.",
+      );
+    }
+
     return {
       metadata: {
         id: row.id,

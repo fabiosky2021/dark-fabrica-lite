@@ -59,7 +59,8 @@ function apiKey(): string {
 function friendly(status: number, body: string): string {
   if (status === 402) return "Créditos de IA esgotados. Adicione créditos para continuar gerando.";
   if (status === 403) return "Acesso à IA bloqueado para este espaço de trabalho.";
-  if (status === 429) return "Limite de requisições atingido. Aguarde alguns segundos e tente novamente.";
+  if (status === 429)
+    return "Limite de requisições atingido. Aguarde alguns segundos e tente novamente.";
   if (status === 401) return "Credencial de IA inválida no servidor.";
   const short = body.slice(0, 300);
   return `Falha na IA (${status}). ${short}`;

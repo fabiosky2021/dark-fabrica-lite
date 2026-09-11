@@ -10,9 +10,15 @@ export const Route = createFileRoute("/producoes")({
   head: () => ({
     meta: [
       { title: "Produções anteriores | Fábrica Dark IA" },
-      { name: "description", content: "Histórico de produções: abrir, duplicar e excluir projetos." },
+      {
+        name: "description",
+        content: "Histórico de produções: abrir, duplicar e excluir projetos.",
+      },
       { property: "og:title", content: "Produções anteriores" },
-      { property: "og:description", content: "Todo o histórico das suas produções em um só lugar." },
+      {
+        property: "og:description",
+        content: "Todo o histórico das suas produções em um só lugar.",
+      },
     ],
   }),
   component: ProducoesPage,
@@ -50,11 +56,7 @@ function ProducoesPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
-              <Select
-                className="w-44"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
+              <Select className="w-44" value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option value="all">Todos os status</option>
                 <option value="draft">Rascunho</option>
                 <option value="producing">Produzindo</option>

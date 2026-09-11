@@ -7,9 +7,15 @@ export const Route = createFileRoute("/agentes")({
   head: () => ({
     meta: [
       { title: "Agentes | Fábrica Dark IA" },
-      { name: "description", content: "Status dos agentes simulados durante a produção de conteúdo." },
+      {
+        name: "description",
+        content: "Status dos agentes simulados durante a produção de conteúdo.",
+      },
       { property: "og:title", content: "Agentes | Fábrica Dark IA" },
-      { property: "og:description", content: "Estrategista, roteirista, diretor, thumbnail, SEO e qualidade." },
+      {
+        property: "og:description",
+        content: "Estrategista, roteirista, diretor, thumbnail, SEO e qualidade.",
+      },
     ],
   }),
   component: AgentesPage,

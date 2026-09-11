@@ -11,14 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentesRouteImport } from './routes/agentes'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as FabricaRouteImport } from './routes/fabrica'
+import { Route as IdeiasRouteImport } from './routes/ideias'
 import { Route as MemoriaRouteImport } from './routes/memoria'
 import { Route as ProducoesRouteImport } from './routes/producoes'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RoteirosRouteImport } from './routes/roteiros'
 import { Route as StoryboardsRouteImport } from './routes/storyboards'
 import { Route as ThumbnailsRouteImport } from './routes/thumbnails'
+import { Route as VideoRouteImport } from './routes/video'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -30,6 +33,11 @@ const AgentesRoute = AgentesRouteImport.update({
   path: '/agentes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
@@ -38,6 +46,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
 const FabricaRoute = FabricaRouteImport.update({
   id: '/fabrica',
   path: '/fabrica',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdeiasRoute = IdeiasRouteImport.update({
+  id: '/ideias',
+  path: '/ideias',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MemoriaRoute = MemoriaRouteImport.update({
@@ -70,94 +83,120 @@ const ThumbnailsRoute = ThumbnailsRouteImport.update({
   path: '/thumbnails',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VideoRoute = VideoRouteImport.update({
+  id: '/video',
+  path: '/video',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agentes': typeof AgentesRoute
+  '/analytics': typeof AnalyticsRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/fabrica': typeof FabricaRoute
+  '/ideias': typeof IdeiasRoute
   '/memoria': typeof MemoriaRoute
   '/producoes': typeof ProducoesRoute
   '/roadmap': typeof RoadmapRoute
   '/roteiros': typeof RoteirosRoute
   '/storyboards': typeof StoryboardsRoute
   '/thumbnails': typeof ThumbnailsRoute
+  '/video': typeof VideoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   id:
     | '__root__'
     | '/'
     | '/agentes'
+    | '/analytics'
     | '/configuracoes'
     | '/fabrica'
+    | '/ideias'
     | '/memoria'
     | '/producoes'
     | '/roadmap'
     | '/roteiros'
     | '/storyboards'
     | '/thumbnails'
+    | '/video'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentesRoute: typeof AgentesRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FabricaRoute: typeof FabricaRoute
+  IdeiasRoute: typeof IdeiasRoute
   MemoriaRoute: typeof MemoriaRoute
   ProducoesRoute: typeof ProducoesRoute
   RoadmapRoute: typeof RoadmapRoute
   RoteirosRoute: typeof RoteirosRoute
   StoryboardsRoute: typeof StoryboardsRoute
   ThumbnailsRoute: typeof ThumbnailsRoute
+  VideoRoute: typeof VideoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -176,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configuracoes': {
       id: '/configuracoes'
       path: '/configuracoes'
@@ -188,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/fabrica'
       fullPath: '/fabrica'
       preLoaderRoute: typeof FabricaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ideias': {
+      id: '/ideias'
+      path: '/ideias'
+      fullPath: '/ideias'
+      preLoaderRoute: typeof IdeiasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/memoria': {
@@ -232,20 +285,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ThumbnailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/video': {
+      id: '/video'
+      path: '/video'
+      fullPath: '/video'
+      preLoaderRoute: typeof VideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentesRoute: AgentesRoute,
+  AnalyticsRoute: AnalyticsRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   FabricaRoute: FabricaRoute,
+  IdeiasRoute: IdeiasRoute,
   MemoriaRoute: MemoriaRoute,
   ProducoesRoute: ProducoesRoute,
   RoadmapRoute: RoadmapRoute,
   RoteirosRoute: RoteirosRoute,
   StoryboardsRoute: StoryboardsRoute,
   ThumbnailsRoute: ThumbnailsRoute,
+  VideoRoute: VideoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
