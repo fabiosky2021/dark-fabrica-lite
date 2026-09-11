@@ -9,12 +9,12 @@ import { useFactory } from "@/hooks/useFactory";
 import {
   freeModels,
   getProviders,
-  maskSecret,
   routingAgents,
   saveProviders,
   testProvider,
   type AIProviderConfig,
 } from "@/services/providerRegistry";
+import { diagnoseGateway, type GatewayDiagnosticResult } from "@/lib/ai/gateway-diagnostics.server";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -44,6 +44,8 @@ function ConfiguracoesPage() {
   const [results, setResults] = useState<
     Record<string, { ok: boolean; message: string; latencyMs: number }>
   >({});
+  const [diagnostic, setDiagnostic] = useState<GatewayDiagnosticResult | null>(null);
+  const [diagnosing, setDiagnosing] = useState(false);
 
   useEffect(() => {
     setPrefs(storageService.get<Prefs>("prefs", DEFAULTS));
@@ -68,6 +70,30 @@ function ConfiguracoesPage() {
   const persistProviders = () => {
     saveProviders(providers);
     setSaved(true);
+  };
+  const runDiagnostic = async () => {
+    const gateway = providers.find((provider) => provider.id === "vercel-gateway") ?? providers[0];
+    if (!gateway) return;
+    setDiagnosing(true);
+    try {
+      setDiagnostic(await diagnoseGateway({ data: gateway }));
+    } catch (error) {
+      setDiagnostic({
+        gateway: "failed",
+        provider: "not-configured",
+        endpoint: "failed",
+        authentication: "failed",
+        model: "failed",
+        chatCompletions: "failed",
+        fallback: "not-tested",
+        routing: "not-tested",
+        latencyMs: 0,
+        error: error instanceof Error ? error.message : "Diagnóstico indisponível.",
+        localEndpoint: /127\\.0\\.0\\.1/.test(gateway.baseUrl),
+      });
+    } finally {
+      setDiagnosing(false);
+    }
   };
   const exportar = () => {
     const blob = new Blob(
@@ -116,6 +142,74 @@ function ConfiguracoesPage() {
       </div>
       {tab === "Provedores" || tab === "Gateway" ? (
         <div className="space-y-6">
+          {tab === "Gateway" && (
+            <Panel title="Diagnóstico do Gateway">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="max-w-2xl text-sm text-muted-foreground">
+                  Verifica o ambiente server-side sem expor credenciais. A chamada de chat usa
+                  apenas 4 tokens para evitar custos desnecessários.
+                </p>
+                <Button onClick={runDiagnostic} disabled={diagnosing || providers.length === 0}>
+                  {diagnosing ? (
+                    <RefreshCw className="animate-spin" size={16} />
+                  ) : (
+                    <Wifi size={16} />
+                  )}
+                  {diagnosing ? "Diagnosticando..." : "Executar diagnóstico"}
+                </Button>
+              </div>
+              {diagnostic?.localEndpoint && (
+                <div className="mt-4 rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+                  Endpoint local detectado. Um endpoint 127.0.0.1 não pode ser utilizado pelo deploy
+                  Vercel como se fosse o computador do usuário.
+                </div>
+              )}
+              {diagnostic && (
+                <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {(
+                    [
+                      ["AI Gateway", diagnostic.gateway],
+                      ["Provider", diagnostic.provider],
+                      ["Endpoint", diagnostic.endpoint],
+                      ["Autenticação", diagnostic.authentication],
+                      ["Modelo", diagnostic.model],
+                      ["Chat completions", diagnostic.chatCompletions],
+                      ["Fallback", diagnostic.fallback],
+                      ["Roteamento", diagnostic.routing],
+                    ] as const
+                  ).map(([label, status]) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm"
+                    >
+                      <span>{label}</span>
+                      <Badge
+                        tone={
+                          status === "ok" || status === "configured"
+                            ? "success"
+                            : status === "not-tested"
+                              ? "warning"
+                              : "danger"
+                        }
+                      >
+                        {status === "ok" || status === "configured"
+                          ? "Funcionando"
+                          : status === "not-tested"
+                            ? "Não testado"
+                            : "Falhou"}
+                      </Badge>
+                    </div>
+                  ))}
+                  <div className="rounded-md border border-border px-3 py-2 text-sm">
+                    Latência <strong className="ml-2">{diagnostic.latencyMs} ms</strong>
+                  </div>
+                </div>
+              )}
+              {diagnostic?.error && (
+                <p className="mt-4 text-sm text-destructive">Erro: {diagnostic.error}</p>
+              )}
+            </Panel>
+          )}
           <Panel title="Provedores ativos">
             <div className="space-y-4">
               {providers.map((provider) => {
