@@ -68,13 +68,14 @@ function configuredRoutes(preferred?: string): ProviderRoute[] {
       id: "9router",
       baseUrl: routerUrl,
       model: process.env["ROUTER_MODEL"] ?? "auto",
-      apiKey: routerKey,
+      ...(routerKey ? { apiKey: routerKey } : {}),
     });
+  const lovableKey = process.env["LOVABLE_API_KEY"];
   routes.push({
     id: "lovable-gateway",
     baseUrl: GATEWAY,
     model: TEXT_MODEL,
-    apiKey: process.env["LOVABLE_API_KEY"],
+    ...(lovableKey ? { apiKey: lovableKey } : {}),
   });
   if (!preferred) return routes;
   return [
