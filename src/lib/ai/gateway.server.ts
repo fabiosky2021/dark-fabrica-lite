@@ -34,8 +34,53 @@ export interface ChatOptions {
   system: string;
   user: string;
   model?: string;
+  provider?: string;
+  agent?: string;
+  task?: string;
+  temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;
+}
+
+export interface GatewayResult {
+  ok: boolean;
+  provider: string;
+  model: string;
+  content: string;
+  latencyMs: number;
+  fallbackUsed: boolean;
+  error?: string;
+}
+
+interface ProviderRoute {
+  id: string;
+  baseUrl: string;
+  model: string;
+  apiKey?: string;
+}
+
+function configuredRoutes(preferred?: string): ProviderRoute[] {
+  const routes: ProviderRoute[] = [];
+  const routerUrl = process.env["ROUTER_BASE_URL"] ?? process.env["NINE_ROUTER_BASE_URL"];
+  const routerKey = process.env["ROUTER_API_KEY"] ?? process.env["NINE_ROUTER_API_KEY"];
+  if (routerUrl)
+    routes.push({
+      id: "9router",
+      baseUrl: routerUrl,
+      model: process.env["ROUTER_MODEL"] ?? "auto",
+      apiKey: routerKey,
+    });
+  routes.push({
+    id: "lovable-gateway",
+    baseUrl: GATEWAY,
+    model: TEXT_MODEL,
+    apiKey: process.env["LOVABLE_API_KEY"],
+  });
+  if (!preferred) return routes;
+  return [
+    ...routes.filter((route) => route.id === preferred),
+    ...routes.filter((route) => route.id !== preferred),
+  ];
 }
 
 export interface SpeechOptions {
@@ -111,50 +156,76 @@ async function requestWithRetry(path: string, body: unknown, timeoutMs: number):
   throw last ?? new AIError(500, "Falha desconhecida na IA.");
 }
 
-/** Chat em streaming (evita cortes de conexão em gerações longas). */
-async function chat({ system, user, model, maxTokens, timeoutMs }: ChatOptions): Promise<string> {
-  const res = await requestWithRetry(
-    "/chat/completions",
-    {
-      model: model ?? TEXT_MODEL,
-      stream: true,
-      reasoning_effort: "low",
-      max_completion_tokens: maxTokens ?? 16000,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    },
-    timeoutMs ?? 300000,
-  );
+async function completeRoute(route: ProviderRoute, opts: ChatOptions): Promise<string> {
+  if (!route.apiKey) throw new AIError(401, `Credencial ausente para ${route.id}.`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 300000);
+  try {
+    const response = await fetch(`${route.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${route.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: opts.model ?? route.model,
+        temperature: opts.temperature ?? 0.7,
+        max_tokens: opts.maxTokens ?? 16000,
+        messages: [
+          { role: "system", content: opts.system },
+          { role: "user", content: opts.user },
+        ],
+      }),
+      signal: controller.signal,
+    });
+    const body = await response.text();
+    if (!response.ok) throw new AIError(response.status, friendly(response.status, body));
+    const json = JSON.parse(body) as { choices?: { message?: { content?: string } }[] };
+    const content = json.choices?.[0]?.message?.content?.trim();
+    if (!content) throw new AIError(502, "A IA retornou uma resposta vazia.");
+    return content;
+  } catch (error) {
+    if (error instanceof AIError) throw error;
+    throw new AIError(504, "Tempo esgotado ao contatar o provedor.");
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
-  if (!res.body) throw new AIError(502, "Resposta vazia da IA.");
-  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buffer = "";
-  let out = "";
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += value;
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith("data:")) continue;
-      const payload = trimmed.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-      try {
-        const json = JSON.parse(payload) as {
-          choices?: { delta?: { content?: string } }[];
-        };
-        out += json.choices?.[0]?.delta?.content ?? "";
-      } catch {
-        /* fragmento incompleto */
-      }
+export async function complete(opts: ChatOptions): Promise<GatewayResult> {
+  const started = Date.now();
+  const routes = configuredRoutes(opts.provider);
+  let lastError = "Nenhum provedor de texto configurado.";
+  for (let index = 0; index < routes.length; index++) {
+    const route = routes[index]!;
+    try {
+      const content = await completeRoute(route, opts);
+      return {
+        ok: true,
+        provider: route.id,
+        model: opts.model ?? route.model,
+        content,
+        latencyMs: Date.now() - started,
+        fallbackUsed: index > 0,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : "Falha desconhecida no provedor.";
+      if (error instanceof AIError && [401, 403, 422].includes(error.status)) break;
     }
   }
-  if (!out.trim()) throw new AIError(502, "A IA não retornou conteúdo.");
-  return out;
+  return {
+    ok: false,
+    provider: opts.provider ?? "none",
+    model: opts.model ?? "none",
+    content: "",
+    latencyMs: Date.now() - started,
+    fallbackUsed: routes.length > 1,
+    error: lastError,
+  };
+}
+
+/** Chat centralizado: todos os agentes passam pelo registry lógico do Gateway. */
+async function chat(opts: ChatOptions): Promise<string> {
+  const result = await complete(opts);
+  if (!result.ok) throw new AIError(502, result.error ?? "Falha no Gateway de IA.");
+  return result.content;
 }
 
 async function image(
