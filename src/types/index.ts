@@ -199,7 +199,23 @@ export interface ProjectRow {
   updated_at: string;
 }
 export type AssetType = "image" | "audio" | "thumbnail" | "video";
+export type AssetStatus = "pending" | "processing" | "completed" | "failed" | "retrying";
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
+export interface AssetResult {
+  success: boolean;
+  assetType: AssetType;
+  status: "completed" | "failed";
+  url?: string;
+  storagePath?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  provider?: string;
+  error?: string;
+  retryable?: boolean;
+  metadata?: Record<string, Json>;
+}
+
 export interface AssetRow {
   id: string;
   project_id: string;
@@ -207,9 +223,10 @@ export interface AssetRow {
   user_id: string;
   type: AssetType;
   url: string;
-  status: string;
+  status: AssetStatus;
   meta: Record<string, Json>;
   created_at: string;
+  updated_at?: string;
 }
 export interface AgentRunRow {
   id: string;

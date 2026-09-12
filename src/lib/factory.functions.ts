@@ -307,20 +307,15 @@ export const runStage = createServerFn({ method: "POST" })
         case "narration": {
           const text = agents.scriptText(projectData.script);
           if (!text) throw new Error("Gere o roteiro antes da narração.");
-          const { path, chars } = await media.generateNarration(
-            supabase,
-            userId,
-            project.id,
-            text,
-            config.voice,
-          );
+          const result = await media.generateNarration(supabase, userId, project.id, text, config.voice);
+          if (!result.success || !result.storagePath) throw new Error(result.error ?? "A narração não gerou um arquivo válido.");
           await supabase.from("assets").insert({
             project_id: project.id,
             user_id: userId,
             type: "audio",
-            url: path,
-            status: "ready",
-            meta: { chars, voice: config.voice } as never,
+            url: result.storagePath,
+            status: "completed",
+            meta: { chars: result.chars, voice: config.voice, provider: result.provider, sizeBytes: result.sizeBytes } as never,
           } as never);
           await setStage({}, "COMPLETED");
           return { ok: true, stage, message: "Narração gerada e salva." };
@@ -334,7 +329,7 @@ export const runStage = createServerFn({ method: "POST" })
             .select("scene_id")
             .eq("project_id", project.id)
             .eq("type", "image")
-            .eq("status", "ready");
+            .eq("status", "completed");
           const done = new Set(
             (existing ?? []).map((a) => (a as { scene_id: string | null }).scene_id),
           );
@@ -345,22 +340,16 @@ export const runStage = createServerFn({ method: "POST" })
           }
           const batch = pending.slice(0, 4);
           for (const scene of batch) {
-            const path = await media.generateSceneImage(
-              supabase,
-              userId,
-              project.id,
-              scene.id,
-              scene.prompt,
-              scene.negative_prompt || agents.NEGATIVE_PROMPT,
-            );
+            const result = await media.generateSceneImage(supabase, userId, project.id, scene.id, scene.prompt, scene.negative_prompt || agents.NEGATIVE_PROMPT);
+            if (!result.success || !result.storagePath) throw new Error(result.error ?? "A imagem não gerou um arquivo válido.");
             await supabase.from("assets").insert({
               project_id: project.id,
               scene_id: scene.id,
               user_id: userId,
               type: "image",
-              url: path,
-              status: "ready",
-              meta: { idx: scene.idx } as never,
+              url: result.storagePath,
+              status: "completed",
+              meta: { idx: scene.idx, provider: result.provider, sizeBytes: result.sizeBytes } as never,
             } as never);
           }
           const remaining = pending.length - batch.length;
@@ -383,35 +372,19 @@ export const runStage = createServerFn({ method: "POST" })
         case "thumbnail": {
           const thumbnails = await agents.runThumbnail(project.theme, config, projectData);
           const first = thumbnails[0];
+          if (!first?.prompt) throw new Error("Nenhum conceito de thumbnail foi gerado.");
+          const result = await media.generateThumbnailImage(supabase, userId, project.id, first.id, first.prompt, agents.NEGATIVE_PROMPT);
+          if (!result.success || !result.storagePath) throw new Error(result.error ?? "A thumbnail não gerou um arquivo válido.");
+          await supabase.from("assets").insert({
+            project_id: project.id,
+            user_id: userId,
+            type: "thumbnail",
+            url: result.storagePath,
+            status: "completed",
+            meta: { concept: first.id, provider: result.provider, sizeBytes: result.sizeBytes } as never,
+          } as never);
           await setStage({ thumbnails }, "COMPLETED");
-          if (first?.prompt) {
-            try {
-              const path = await media.generateThumbnailImage(
-                supabase,
-                userId,
-                project.id,
-                first.id,
-                first.prompt,
-                agents.NEGATIVE_PROMPT,
-              );
-              await supabase.from("assets").insert({
-                project_id: project.id,
-                user_id: userId,
-                type: "thumbnail",
-                url: path,
-                status: "ready",
-                meta: { concept: first.id } as never,
-              } as never);
-            } catch (imageError) {
-              return {
-                ok: true,
-                stage,
-                message: "Conceitos de thumbnail gerados.",
-                error: `A imagem do conceito A falhou: ${message(imageError)}`,
-              };
-            }
-          }
-          return { ok: true, stage, message: "Conceitos e imagem de thumbnail gerados." };
+          return { ok: true, stage, message: "Conceitos e thumbnail real validados." };
         }
         case "seo": {
           const seo = await agents.runSeo(project.theme, config, projectData);
