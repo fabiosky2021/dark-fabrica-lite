@@ -10,7 +10,7 @@ import type { AssetRow, ProjectRow, SceneRow } from "@/types";
 export interface VideoAssetState {
   assetId: string;
   sceneId: string;
-  status: "generating" | "ready" | "error";
+  status: "generating" | "completed" | "error";
   url: string | null;
   error?: string;
   progress?: number;
@@ -94,6 +94,108 @@ export const startSceneVideo = createServerFn({ method: "POST" })
       status: "generating",
       url: null,
     };
+  });
+
+/** Monta os clipes concluídos em um único MP4 e o salva no Storage privado. */
+export const renderProjectVideo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { projectId: string }) => input)
+  .handler(async ({ data, context }): Promise<VideoAssetState> => {
+    const { signedUrl, uploadBinary } = await import("./media.server");
+    const { data: rows, error } = await context.supabase
+      .from("assets")
+      .select("*")
+      .eq("project_id", data.projectId)
+      .eq("type", "video")
+      .eq("status", "completed")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    const assets = (rows ?? []) as unknown as AssetRow[];
+    if (!assets.length) throw new Error("Nenhum clipe concluído para montar.");
+
+    const [{ mkdtemp, writeFile, readFile, rm }, { tmpdir }, { join }, { spawn }] =
+      await Promise.all([
+        import("node:fs/promises"),
+        import("node:os"),
+        import("node:path"),
+        import("node:child_process"),
+      ]);
+    const temp = await mkdtemp(join(tmpdir(), "dark-fabrica-render-"));
+    const outputPath = join(temp, "render.mp4");
+    try {
+      const concatLines: string[] = [];
+      for (const [index, asset] of assets.entries()) {
+        const response = await fetch(await signedUrl(context.supabase, asset.url));
+        if (!response.ok) throw new Error(`Falha ao baixar o clipe ${index + 1}.`);
+        const clipPath = join(temp, `clip-${String(index).padStart(4, "0")}.mp4`);
+        await writeFile(clipPath, Buffer.from(await response.arrayBuffer()));
+        concatLines.push(`file '${clipPath.replaceAll("'", "'\\''")}'`);
+      }
+      const listPath = join(temp, "concat.txt");
+      await writeFile(listPath, `${concatLines.join("\\n")}\\n`, "utf8");
+      const ffmpegModule = await import("ffmpeg-static");
+      const ffmpegPath = ffmpegModule.default;
+      if (!ffmpegPath) throw new Error("FFMPEG_BINARY_UNAVAILABLE");
+      await new Promise<void>((resolve, reject) => {
+        const process = spawn(ffmpegPath, [
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-f",
+          "concat",
+          "-safe",
+          "0",
+          "-i",
+          listPath,
+          "-c",
+          "copy",
+          "-movflags",
+          "+faststart",
+          "-y",
+          outputPath,
+        ]);
+        let stderr = "";
+        process.stderr.on("data", (chunk: Buffer) => {
+          stderr += chunk.toString();
+        });
+        process.on("error", reject);
+        process.on("close", (code) =>
+          code === 0
+            ? resolve()
+            : reject(new Error(stderr || `FFmpeg terminou com código ${code}.`)),
+        );
+      });
+      const bytes = new Uint8Array(await readFile(outputPath));
+      const path = await uploadBinary(
+        context.supabase,
+        context.userId,
+        `${data.projectId}/renders/final.mp4`,
+        bytes,
+        "video/mp4",
+      );
+      const { data: inserted, error: insertError } = await context.supabase
+        .from("assets")
+        .insert({
+          user_id: context.userId,
+          project_id: data.projectId,
+          scene_id: null,
+          type: "video",
+          url: path,
+          status: "completed",
+          meta: { kind: "project-render", clips: assets.length, renderer: "ffmpeg" } as never,
+        })
+        .select("id")
+        .single();
+      if (insertError) throw new Error(insertError.message);
+      return {
+        assetId: (inserted as { id: string }).id,
+        sceneId: "",
+        status: "completed",
+        url: await signedUrl(context.supabase, path),
+      };
+    } finally {
+      await rm(temp, { recursive: true, force: true });
+    }
   });
 
 /** Consulta o job e grava o MP4 quando ele fica pronto. */
