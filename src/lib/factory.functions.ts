@@ -24,6 +24,7 @@ export const STAGE_ORDER: StageId[] = [
   "prompts",
   "narration",
   "visuals",
+  "video",
   "thumbnail",
   "seo",
   "quality",
@@ -80,7 +81,7 @@ export const getProject = createServerFn({ method: "POST" })
     const assetRows = (assets.data ?? []) as unknown as AssetRow[];
     const withUrls = await Promise.all(
       assetRows.map(async (a) => {
-        if (!a.url || a.status !== "ready") return a;
+        if (!a.url || a.status !== "completed") return a;
         try {
           return { ...a, url: await signedUrl(context.supabase, a.url) };
         } catch {
@@ -195,7 +196,30 @@ export const runStage = createServerFn({ method: "POST" })
     const project = projectRow as unknown as ProjectRow;
     const config = project.config as ProjectConfig;
     const stages = (project.stages ?? {}) as Stages;
-    const attempt = (stages[stage]?.attempt ?? 0) + 1;
+    const currentStage = stages[stage];
+    if (currentStage?.status === "COMPLETED") {
+      return { ok: true, stage, message: "Etapa já concluída; nenhum trabalho repetido." };
+    }
+    const attempt = (currentStage?.attempt ?? 0) + 1;
+    const runningStages: Stages = {
+      ...stages,
+      [stage]: { status: "RUNNING", attempt, error: null, updatedAt: new Date().toISOString() },
+    };
+    const runningUpdate = await supabase
+      .from("projects")
+      .update({ stages: runningStages as never, status: statusForStage(stage) } as never)
+      .eq("id", project.id);
+    if (runningUpdate.error) throw new Error(runningUpdate.error.message);
+    const { error: runError } = await supabase.from("agent_runs").insert({
+      project_id: project.id,
+      user_id: userId,
+      agent: stage,
+      status: "RUNNING",
+      attempt,
+      duration_ms: 0,
+      error: null,
+    });
+    if (runError) throw new Error(runError.message);
 
     const setStage = async (
       patch: Partial<ProjectData>,
@@ -307,15 +331,27 @@ export const runStage = createServerFn({ method: "POST" })
         case "narration": {
           const text = agents.scriptText(projectData.script);
           if (!text) throw new Error("Gere o roteiro antes da narração.");
-          const result = await media.generateNarration(supabase, userId, project.id, text, config.voice);
-          if (!result.success || !result.storagePath) throw new Error(result.error ?? "A narração não gerou um arquivo válido.");
+          const result = await media.generateNarration(
+            supabase,
+            userId,
+            project.id,
+            text,
+            config.voice,
+          );
+          if (!result.success || !result.storagePath)
+            throw new Error(result.error ?? "A narração não gerou um arquivo válido.");
           await supabase.from("assets").insert({
             project_id: project.id,
             user_id: userId,
             type: "audio",
             url: result.storagePath,
             status: "completed",
-            meta: { chars: result.chars, voice: config.voice, provider: result.provider, sizeBytes: result.sizeBytes } as never,
+            meta: {
+              chars: result.chars,
+              voice: config.voice,
+              provider: result.provider,
+              sizeBytes: result.sizeBytes,
+            } as never,
           } as never);
           await setStage({}, "COMPLETED");
           return { ok: true, stage, message: "Narração gerada e salva." };
@@ -340,8 +376,16 @@ export const runStage = createServerFn({ method: "POST" })
           }
           const batch = pending.slice(0, 4);
           for (const scene of batch) {
-            const result = await media.generateSceneImage(supabase, userId, project.id, scene.id, scene.prompt, scene.negative_prompt || agents.NEGATIVE_PROMPT);
-            if (!result.success || !result.storagePath) throw new Error(result.error ?? "A imagem não gerou um arquivo válido.");
+            const result = await media.generateSceneImage(
+              supabase,
+              userId,
+              project.id,
+              scene.id,
+              scene.prompt,
+              scene.negative_prompt || agents.NEGATIVE_PROMPT,
+            );
+            if (!result.success || !result.storagePath)
+              throw new Error(result.error ?? "A imagem não gerou um arquivo válido.");
             await supabase.from("assets").insert({
               project_id: project.id,
               scene_id: scene.id,
@@ -349,7 +393,11 @@ export const runStage = createServerFn({ method: "POST" })
               type: "image",
               url: result.storagePath,
               status: "completed",
-              meta: { idx: scene.idx, provider: result.provider, sizeBytes: result.sizeBytes } as never,
+              meta: {
+                idx: scene.idx,
+                provider: result.provider,
+                sizeBytes: result.sizeBytes,
+              } as never,
             } as never);
           }
           const remaining = pending.length - batch.length;
@@ -369,19 +417,102 @@ export const runStage = createServerFn({ method: "POST" })
               : {}),
           };
         }
+        case "video": {
+          const scenes = await loadScenes();
+          const { data: images, error: imageError } = await supabase
+            .from("assets")
+            .select("scene_id, url")
+            .eq("project_id", project.id)
+            .eq("type", "image")
+            .eq("status", "completed");
+          if (imageError) throw new Error(imageError.message);
+          const imageByScene = new Map((images ?? []).map((asset) => [asset.scene_id, asset.url]));
+          const { data: existing, error: videoError } = await supabase
+            .from("assets")
+            .select("scene_id")
+            .eq("project_id", project.id)
+            .eq("type", "video")
+            .eq("status", "completed");
+          if (videoError) throw new Error(videoError.message);
+          const done = new Set((existing ?? []).map((asset) => asset.scene_id));
+          const pending = scenes.filter(
+            (scene) => imageByScene.has(scene.id) && !done.has(scene.id),
+          );
+          if (pending.length === 0) {
+            await setStage({}, "COMPLETED");
+            return { ok: true, stage, message: "Todos os clipes disponíveis já foram gerados." };
+          }
+          for (const scene of pending.slice(0, 2)) {
+            const imagePath = imageByScene.get(scene.id);
+            if (!imagePath) continue;
+            const result = await media.generateSceneVideo(
+              supabase,
+              userId,
+              project.id,
+              scene.id,
+              scene.movement || scene.action || scene.prompt,
+              imagePath,
+              "5",
+            );
+            if (!result.success || !result.storagePath)
+              throw new Error(result.error ?? "O clipe não gerou um arquivo válido.");
+            await supabase.from("assets").insert({
+              project_id: project.id,
+              scene_id: scene.id,
+              user_id: userId,
+              type: "video",
+              url: result.storagePath,
+              status: "completed",
+              meta: {
+                idx: scene.idx,
+                provider: result.provider,
+                sizeBytes: result.sizeBytes,
+                ...(result.metadata ?? {}),
+              } as never,
+            } as never);
+          }
+          const remaining =
+            scenes.filter((scene) => imageByScene.has(scene.id) && !done.has(scene.id)).length -
+            Math.min(2, pending.length);
+          await setStage(
+            {},
+            remaining > 0 ? "FAILED" : "COMPLETED",
+            remaining > 0 ? `${remaining} cenas ainda sem clipe.` : undefined,
+          );
+          return {
+            ok: remaining === 0,
+            stage,
+            message:
+              remaining > 0
+                ? `Clipes gerados; faltam ${remaining}.`
+                : "Clipes reais gerados e salvos.",
+          };
+        }
         case "thumbnail": {
           const thumbnails = await agents.runThumbnail(project.theme, config, projectData);
           const first = thumbnails[0];
           if (!first?.prompt) throw new Error("Nenhum conceito de thumbnail foi gerado.");
-          const result = await media.generateThumbnailImage(supabase, userId, project.id, first.id, first.prompt, agents.NEGATIVE_PROMPT);
-          if (!result.success || !result.storagePath) throw new Error(result.error ?? "A thumbnail não gerou um arquivo válido.");
+          const result = await media.generateThumbnailImage(
+            supabase,
+            userId,
+            project.id,
+            first.id,
+            first.prompt,
+            agents.NEGATIVE_PROMPT,
+          );
+          if (!result.success || !result.storagePath)
+            throw new Error(result.error ?? "A thumbnail não gerou um arquivo válido.");
           await supabase.from("assets").insert({
             project_id: project.id,
             user_id: userId,
             type: "thumbnail",
             url: result.storagePath,
             status: "completed",
-            meta: { concept: first.id, provider: result.provider, sizeBytes: result.sizeBytes } as never,
+            meta: {
+              concept: first.id,
+              provider: result.provider,
+              sizeBytes: result.sizeBytes,
+            } as never,
           } as never);
           await setStage({ thumbnails }, "COMPLETED");
           return { ok: true, stage, message: "Conceitos e thumbnail real validados." };
@@ -426,6 +557,8 @@ function statusForStage(stage: StageId): ProjectRow["status"] {
       return "NARRACAO";
     case "visuals":
       return "VISUAIS";
+    case "video":
+      return "MONTAGEM";
     case "thumbnail":
     case "seo":
       return "MONTAGEM";
@@ -457,7 +590,7 @@ export const compileProject = createServerFn({ method: "POST" })
     }
 
     const readyAssets = ((assets.data ?? []) as unknown as AssetRow[]).filter(
-      (asset) => asset.status === "ready",
+      (asset) => asset.status === "completed",
     );
     if (readyAssets.length === 0) {
       throw new Error(

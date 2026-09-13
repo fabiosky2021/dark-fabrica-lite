@@ -7,6 +7,7 @@ export type StageId =
   | "prompts"
   | "narration"
   | "visuals"
+  | "video"
   | "thumbnail"
   | "seo"
   | "quality";
@@ -31,6 +32,7 @@ export const STAGES: { id: StageId; name: string; icon: string }[] = [
   { id: "prompts", name: "Prompts", icon: "wand" },
   { id: "narration", name: "Narração", icon: "mic" },
   { id: "visuals", name: "Visuais", icon: "image" },
+  { id: "video", name: "Clipes de vídeo", icon: "video" },
   { id: "thumbnail", name: "Thumbnail", icon: "layout" },
   { id: "seo", name: "SEO", icon: "search" },
   { id: "quality", name: "Controle de Qualidade", icon: "shield-check" },

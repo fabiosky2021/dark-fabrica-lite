@@ -46,7 +46,7 @@ export const startSceneVideo = createServerFn({ method: "POST" })
       .select("*")
       .eq("scene_id", scene.id)
       .eq("type", "image")
-      .eq("status", "ready")
+      .eq("status", "completed")
       .limit(1)
       .maybeSingle();
     const imageRow = imageAsset as unknown as AssetRow | null;
@@ -111,11 +111,11 @@ export const checkSceneVideo = createServerFn({ method: "POST" })
 
     const { signedUrl, uploadBinary } = await import("./media.server");
 
-    if (asset.status === "ready" && asset.url) {
+    if (asset.status === "completed" && asset.url) {
       return {
         assetId: asset.id,
         sceneId: asset.scene_id ?? "",
-        status: "ready",
+        status: "completed",
         url: await signedUrl(context.supabase, asset.url),
       };
     }
@@ -140,7 +140,13 @@ export const checkSceneVideo = createServerFn({ method: "POST" })
           .from("assets")
           .update({ status: "error", meta: { ...asset.meta, error } as never })
           .eq("id", asset.id);
-        return { assetId: asset.id, sceneId: asset.scene_id ?? "", status: "error", url: null, error };
+        return {
+          assetId: asset.id,
+          sceneId: asset.scene_id ?? "",
+          status: "error",
+          url: null,
+          error,
+        };
       }
       if (job.status !== "completed") {
         return {
@@ -162,12 +168,12 @@ export const checkSceneVideo = createServerFn({ method: "POST" })
       );
       await context.supabase
         .from("assets")
-        .update({ url: path, status: "ready" })
+        .update({ url: path, status: "completed" })
         .eq("id", asset.id);
       return {
         assetId: asset.id,
         sceneId: asset.scene_id ?? "",
-        status: "ready",
+        status: "completed",
         url: await signedUrl(context.supabase, path),
       };
     } catch (error) {
