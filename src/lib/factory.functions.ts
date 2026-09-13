@@ -25,6 +25,7 @@ export const STAGE_ORDER: StageId[] = [
   "narration",
   "visuals",
   "video",
+  "render",
   "thumbnail",
   "seo",
   "quality",
@@ -488,6 +489,15 @@ export const runStage = createServerFn({ method: "POST" })
                 : "Clipes reais gerados e salvos.",
           };
         }
+        case "render": {
+          const { renderProjectVideo } = await import("./video.functions");
+          const rendered = await renderProjectVideo({ data: { projectId: project.id } });
+          if (rendered.status !== "completed" || !rendered.url) {
+            throw new Error(rendered.error ?? "O renderizador não produziu um MP4 válido.");
+          }
+          await setStage({ render: rendered }, "COMPLETED");
+          return { ok: true, stage, message: "MP4 final renderizado e salvo no Storage." };
+        }
         case "thumbnail": {
           const thumbnails = await agents.runThumbnail(project.theme, config, projectData);
           const first = thumbnails[0];
@@ -524,6 +534,32 @@ export const runStage = createServerFn({ method: "POST" })
         }
         case "quality": {
           const scenes = await loadScenes();
+          const { data: qualityAssets, error: qualityAssetError } = await supabase
+            .from("assets")
+            .select("type, scene_id, status, url")
+            .eq("project_id", project.id)
+            .eq("status", "completed");
+          if (qualityAssetError) throw new Error(qualityAssetError.message);
+          const completedAssets = qualityAssets ?? [];
+          const hasNarration = completedAssets.some((asset) => asset.type === "audio" && asset.url);
+          const sceneIds = new Set(scenes.map((scene) => scene.id));
+          const completeVisuals = new Set(
+            completedAssets
+              .filter((asset) => asset.type === "image" && asset.scene_id)
+              .map((asset) => asset.scene_id),
+          );
+          const completeVideos = new Set(
+            completedAssets
+              .filter((asset) => asset.type === "video" && asset.scene_id)
+              .map((asset) => asset.scene_id),
+          );
+          const missingVisuals = scenes.filter((scene) => !completeVisuals.has(scene.id)).length;
+          const missingVideos = scenes.filter((scene) => !completeVideos.has(scene.id)).length;
+          if (!hasNarration || missingVisuals > 0 || missingVideos > 0 || sceneIds.size === 0) {
+            throw new Error(
+              `QC bloqueado: narração ${hasNarration ? "ok" : "ausente"}; visuais faltando ${missingVisuals}; clipes faltando ${missingVideos}.`,
+            );
+          }
           const quality = await agents.runQuality(project.theme, config, projectData, scenes);
           await setStage({ quality }, "COMPLETED");
           return {
@@ -558,6 +594,7 @@ function statusForStage(stage: StageId): ProjectRow["status"] {
     case "visuals":
       return "VISUAIS";
     case "video":
+    case "render":
       return "MONTAGEM";
     case "thumbnail":
     case "seo":

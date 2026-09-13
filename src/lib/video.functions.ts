@@ -112,6 +112,16 @@ export const renderProjectVideo = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const assets = (rows ?? []) as unknown as AssetRow[];
     if (!assets.length) throw new Error("Nenhum clipe concluído para montar.");
+    const { data: narrationRow } = await context.supabase
+      .from("assets")
+      .select("*")
+      .eq("project_id", data.projectId)
+      .eq("type", "audio")
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const narration = narrationRow as unknown as AssetRow | null;
 
     const [{ mkdtemp, writeFile, readFile, rm }, { tmpdir }, { join }, { spawn }] =
       await Promise.all([
@@ -132,12 +142,19 @@ export const renderProjectVideo = createServerFn({ method: "POST" })
         concatLines.push(`file '${clipPath.replaceAll("'", "'\\''")}'`);
       }
       const listPath = join(temp, "concat.txt");
-      await writeFile(listPath, `${concatLines.join("\\n")}\\n`, "utf8");
+      await writeFile(listPath, `${concatLines.join("\n")}\n`, "utf8");
+      let narrationPath: string | null = null;
+      if (narration?.url) {
+        const audioResponse = await fetch(await signedUrl(context.supabase, narration.url));
+        if (!audioResponse.ok) throw new Error("Falha ao baixar a narração.");
+        narrationPath = join(temp, "narration.mp3");
+        await writeFile(narrationPath, Buffer.from(await audioResponse.arrayBuffer()));
+      }
       const ffmpegModule = await import("ffmpeg-static");
       const ffmpegPath = ffmpegModule.default;
       if (!ffmpegPath) throw new Error("FFMPEG_BINARY_UNAVAILABLE");
       await new Promise<void>((resolve, reject) => {
-        const process = spawn(ffmpegPath, [
+        const args = [
           "-hide_banner",
           "-loglevel",
           "error",
@@ -147,13 +164,27 @@ export const renderProjectVideo = createServerFn({ method: "POST" })
           "0",
           "-i",
           listPath,
-          "-c",
-          "copy",
+          ...(narrationPath
+            ? [
+                "-i",
+                narrationPath,
+                "-map",
+                "0:v:0",
+                "-map",
+                "1:a:0",
+                "-c:v",
+                "copy",
+                "-c:a",
+                "aac",
+                "-shortest",
+              ]
+            : ["-c", "copy"]),
           "-movflags",
           "+faststart",
           "-y",
           outputPath,
-        ]);
+        ];
+        const process = spawn(ffmpegPath, args);
         let stderr = "";
         process.stderr.on("data", (chunk: Buffer) => {
           stderr += chunk.toString();
