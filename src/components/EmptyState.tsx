@@ -3,7 +3,7 @@ import { Panel } from "@/components/ui-kit";
 
 export function EmptyState({
   title = "Nada por aqui ainda",
-  description = "Inicie uma produção na Fábrica ou carregue o modo demonstração.",
+  description = "Inicie uma produção na Fábrica para criar seus primeiros assets.",
 }: {
   title?: string;
   description?: string;

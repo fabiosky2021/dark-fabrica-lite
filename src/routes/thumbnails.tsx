@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Copy, Image as ImageIcon, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { Badge, Button, DemoTag, Panel, ScoreBar } from "@/components/ui-kit";
+import { Badge, Button, Panel, ScoreBar } from "@/components/ui-kit";
 import { EmptyState } from "@/components/EmptyState";
 import { useCurrentProject } from "@/hooks/useFactory";
 
@@ -56,7 +56,6 @@ function ThumbsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <DemoTag />
           <Link to="/ideias">
             <Button variant="outline">
               <Sparkles className="size-4" /> Buscar ideias

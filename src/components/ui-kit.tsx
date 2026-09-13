@@ -140,7 +140,3 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
-
-export function DemoTag() {
-  return <Badge tone="warning">Modo demonstração</Badge>;
-}

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
@@ -102,12 +103,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           <h1 className="font-display text-sm font-semibold tracking-wide sm:text-base">
             FÁBRICA DARK IA
           </h1>
-          <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-            <span
-              className={`h-2 w-2 rounded-full ${running ? "bg-warning" : "bg-success"}`}
-              aria-hidden
-            />
-            {running ? "Produzindo…" : "Sistema pronto"}
+          <span className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span
+                className={`h-2 w-2 rounded-full ${running ? "bg-warning" : "bg-success"}`}
+                aria-hidden
+              />
+              {running ? "Produzindo…" : "Sistema pronto"}
+            </span>
+            <button
+              type="button"
+              className="rounded border border-border px-2 py-1 transition-colors hover:bg-accent hover:text-foreground"
+              onClick={() => void supabase.auth.signOut()}
+            >
+              Sair
+            </button>
           </span>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>

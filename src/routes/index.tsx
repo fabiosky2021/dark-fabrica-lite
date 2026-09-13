@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { Panel, Stat, Badge, Button, DemoTag } from "@/components/ui-kit";
+import { Panel, Stat, Badge, Button } from "@/components/ui-kit";
 import { useFactory } from "@/hooks/useFactory";
 import { analyticsService } from "@/services/analyticsService";
 
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Dashboard | Fábrica Dark IA" },
       {
         property: "og:description",
-        content: "Acompanhe suas produções de conteúdo com agentes de IA simulados.",
+        content: "Acompanhe suas produções de conteúdo com agentes de IA.",
       },
     ],
   }),
@@ -38,7 +38,6 @@ function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <DemoTag />
           <Link to="/fabrica">
             <Button>Nova produção</Button>
           </Link>

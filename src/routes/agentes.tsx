@@ -9,7 +9,7 @@ export const Route = createFileRoute("/agentes")({
       { title: "Agentes | Fábrica Dark IA" },
       {
         name: "description",
-        content: "Status dos agentes simulados durante a produção de conteúdo.",
+        content: "Status dos agentes durante a produção de conteúdo.",
       },
       { property: "og:title", content: "Agentes | Fábrica Dark IA" },
       {

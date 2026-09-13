@@ -4,10 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { supabase } from "../integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -119,8 +121,41 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthGate />
     </QueryClientProvider>
   );
+}
+
+function AuthGate() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const isLogin = pathname === "/login";
+
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setChecking(false);
+      if (!data.session && !isLogin) void router.navigate({ to: "/login", replace: true });
+      if (data.session && isLogin) void router.navigate({ to: "/", replace: true });
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session && !isLogin) void router.navigate({ to: "/login", replace: true });
+    });
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [isLogin, pathname, router]);
+
+  if (checking && !isLogin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+        Verificando sessão...
+      </div>
+    );
+  }
+
+  return <Outlet />;
 }

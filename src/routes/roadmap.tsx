@@ -14,7 +14,7 @@ export const Route = createFileRoute("/roadmap")({
       { property: "og:title", content: "Roadmap | Fábrica Dark IA" },
       {
         property: "og:description",
-        content: "Da versão lite às APIs reais de IA, imagem, voz e vídeo.",
+        content: "A evolução da Fábrica Dark IA com autenticação, agentes, mídia e renderização.",
       },
     ],
   }),
@@ -23,22 +23,22 @@ export const Route = createFileRoute("/roadmap")({
 
 const FASES = [
   {
-    fase: "Fase 1 — Lite (atual)",
+    fase: "Fase 1 — Produção autenticada (atual)",
     done: true,
     itens: [
-      "Interface completa em modo demonstração",
-      "Agentes simulados e esteira de produção",
-      "Persistência local no navegador",
+      "Autenticação Supabase e sessões persistentes",
+      "Pipeline server-side com agentes reais",
+      "Persistência de projetos e assets no Storage",
     ],
   },
   {
-    fase: "Fase 2 — IA real",
-    done: false,
+    fase: "Fase 2 — IA e mídia real",
+    done: true,
     itens: ["Geração de roteiro por IA", "Títulos e SEO reais", "Controle de qualidade assistido"],
   },
   {
-    fase: "Fase 3 — Mídia",
-    done: false,
+    fase: "Fase 3 — Renderização",
+    done: true,
     itens: ["Geração de imagens e thumbnails", "Narração por voz", "Montagem de vídeo"],
   },
   {
