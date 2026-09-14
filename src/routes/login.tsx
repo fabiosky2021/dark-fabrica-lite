@@ -7,8 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Entrar | Fábrica Dark IA" },
-      { name: "description", content: "Acesse sua Fábrica Dark IA." },
+      { title: "Acesso | Fábrica Dark IA" },
+      { name: "description", content: "Entre ou crie sua conta na Fábrica Dark IA." },
     ],
   }),
   component: LoginPage,
@@ -18,6 +18,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -38,9 +39,31 @@ function LoginPage() {
     event.preventDefault();
     setError(null);
     setLoading(true);
+    if (mode === "signup") {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+      if (!data.session) {
+        setError("Conta criada. Verifique seu e-mail para confirmar o cadastro antes de entrar.");
+        setLoading(false);
+        return;
+      }
+      await navigate({ to: "/", replace: true });
+      return;
+    }
+
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) {
-      setError(authError.message);
+      setError("E-mail ou senha inválidos.");
       setLoading(false);
       return;
     }
@@ -67,10 +90,12 @@ function LoginPage() {
             FÁBRICA DARK IA
           </p>
           <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">
-            Acesse sua produção
+            {mode === "login" ? "Acesse sua produção" : "Crie sua conta"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Entre para criar e acompanhar projetos reais.
+            {mode === "login"
+              ? "Entre para criar e acompanhar projetos reais."
+              : "Cadastre-se para iniciar sua produção real."}
           </p>
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -90,7 +115,8 @@ function LoginPage() {
             <Input
               className="mt-2"
               type="password"
-              autoComplete="current-password"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              minLength={6}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
@@ -106,8 +132,24 @@ function LoginPage() {
           )}
           <Button className="w-full" type="submit" disabled={loading}>
             {loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-            {loading ? "Entrando..." : "Entrar"}
+            {loading
+              ? mode === "login"
+                ? "Entrando..."
+                : "Criando conta..."
+              : mode === "login"
+                ? "Entrar"
+                : "Criar conta"}
           </Button>
+          <button
+            type="button"
+            className="w-full text-sm text-muted-foreground transition-colors hover:text-foreground"
+            onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setError(null);
+            }}
+          >
+            {mode === "login" ? "Ainda não tenho uma conta" : "Já tenho uma conta"}
+          </button>
         </form>
       </Panel>
     </main>
